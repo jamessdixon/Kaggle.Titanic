@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Kaggle.Titanic.Dojo", "Kaggle.Titanic.Dojo\Kaggle.Titanic.Dojo.fsproj", "{B8188CC8-0CE5-4D77-9C1E-E67D174417C4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{5969E00B-5CA4-4D67-893A-D96067841BF7}"
+	ProjectSection(SolutionItems) = preProject
+		data\test.csv = data\test.csv
+		data\train.csv = data\train.csv
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B8188CC8-0CE5-4D77-9C1E-E67D174417C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8188CC8-0CE5-4D77-9C1E-E67D174417C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8188CC8-0CE5-4D77-9C1E-E67D174417C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8188CC8-0CE5-4D77-9C1E-E67D174417C4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
