@@ -206,61 +206,33 @@ open numl.Model
 open numl.Math.Probability
 open numl.Supervised.DecisionTree
 
+//Create a numl class
 type numlPassenger = {[<Feature>] sex:string; [<Feature>] enbarked:string; [<Label>] survived: bool}
 
+//Create a dataframe populated with instances of the numl classes
 let dataFrame = 
     passengers 
     |> Seq.map(fun p -> {numlPassenger.sex = p.sex; enbarked = p.embarked; survived=p.survived})
     |> Seq.map box
 
+//Create desscriptor so the output is readable
+//Set the seed to help when the samples are randomized
 let descriptor = Descriptor.Create<numlPassenger>()
 Sampling.SetSeedFromSystemTime() 
+//Create a Decision Tree Generator
+//If you want to try a different model, select a 
+//different Generator
 let generator = new DecisionTreeGenerator(descriptor)
 generator.SetHint(false)
+
+//Have the global learner learn from the data and the generator
+//to create the model
 let model = Learner.Learn(dataFrame, 0.80, 25, generator)
-System.Console.WriteLine(model)
-model.Model
 
+//Prinout out the results
+printfn "%A" model.Model
 
-//Using Accord
-//#r "../packages/Accord.3.0.2/lib/net40/Accord.dll"
-//#r "../packages/Accord.Math.3.0.2/lib/net40/Accord.Math.dll"
-//#r "../packages/Accord.MachineLearning.3.0.2/lib/net40/Accord.MachineLearning.dll"
-//#r "../packages/Accord.Statistics.3.0.2/lib/net40/Accord.Statistics.dll"
-//
-//open Accord
-//open Accord.MachineLearning
-//open Accord.MachineLearning.DecisionTrees
-//open Accord.MachineLearning.DecisionTrees.Learning
-//
-//let sex = new DecisionVariable("sex",1)
-//let embarked = new DecisionVariable("embarked",2)
-//let attributes =[|sex;embarked|]
-//let classCount = 2
-//
-//let getInputs (passenger:Passenger) =
-//    let sex = if passenger.sex = "male" then 0.0 else 1.0
-//    let embarked = match passenger.embarked with
-//    | "C" -> 0.0
-//    | "Q" -> 1.0
-//    | _ -> 2.0
-//    [|sex;embarked|]
-//
-//let inputs = 
-//    passengers 
-//    |> Array.map(fun p -> getInputs p)
-//
-//let outputs = 
-//    passengers 
-//    |> Array.map(fun p -> if p.survived = true then 1 else 0)
-//
-//let  tree = new DecisionTree(attributes, classCount)
-//let c45  = new C45Learning(tree)
-//let error = c45.Run(inputs,outputs)
-//
-//let rec printNode (node:DecisionNode) =
-//    if node.Branches.Count > 0 then
-//        node.Branches |> Seq.iter(fun b -> printNode b)
-//    else printfn "%A,%A" (node.Output)(node.GetHeight()) 
-//
-//printNode tree.Root
+//With the model trained
+//Use the test data set...
+//TODO start here
+//model.Model.Predict()
