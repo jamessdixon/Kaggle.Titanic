@@ -276,6 +276,7 @@ let submission =
 //Go ahead and check the data folder and see if there is the .csv
 //in it.  When you open it, it should have
 //a single header row and 418 lines of predictions
+//You can then upload it to Kaggle and see your score
 open System.IO
 let writeResults =
     let outputPath = __SOURCE_DIRECTORY__ + "../../data/submission.csv"

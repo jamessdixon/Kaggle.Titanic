@@ -2,7 +2,7 @@
 //This is a linear dojo
 //with the concepts building on each other
 //You might want to introduce the Titantic disaster
-//Phil Trelford has some good sliders here:  http://www.trelford.com/blog/post/titanic.aspx
+//Phil Trelford has some good slides here:  http://www.trelford.com/blog/post/titanic.aspx
 //You might also want to introduce Kaggle
 
 //A win would be someone working through the code
@@ -295,7 +295,7 @@ let testPath = "../data/test.csv"
 type testContext = CsvProvider<testPath>
 let testRows = testContext.GetSample().Rows
 
-//The test data is identitcal to the train data
+//The test data is identical to the train data
 //with the exception that the survived is not included
 //numl wants the same data structured passed in for calculation
 //so we just default it to false
@@ -327,6 +327,7 @@ let submission =
 //Go ahead and check the data folder and see if there is the .csv
 //in it.  When you open it, it should have
 //a single header row and 418 lines of predictions
+//You can then upload it to Kaggle and see your score
 open System.IO
 let writeResults =
     let outputPath = __SOURCE_DIRECTORY__ + "../../data/submission.csv"
