@@ -1,8 +1,20 @@
 ﻿
-//Thanks to the following examples
-//http://fssnip.net/jb
-//http://numl.net/
-//https://www.kaggle.com/yildirimarda/titanic/titanic-test3/files
+//This is a linear dojo
+//with the concepts building on each other
+//You might want to introduce the Titantic disaster
+//Phil Trelford has some good sliders here:  http://www.trelford.com/blog/post/titanic.aspx
+//You might also want to introduce Kaggle
+
+//A win would be someone working through the code
+//and submitting their own guess to Kaggle
+//Which means they created an account on Kaggle
+//Who knows, maybe some people at the dojo will form a Kaggle team
+//and submit one of the active competitions?
+
+//The Script has TUTORIAL sections where they can just highlight and send
+//to the REPL
+//There are also TASK sections where they can try their hands
+//A possible answer is included in this script
 
 // ------------------------------------------------------------------
 // TUTORIAL: Bring in data using type providers 
@@ -30,6 +42,9 @@ for row in rows do
 // TASK: Print names of surviving males 
 // who have name longer than 40 characters
 // Your Code Here
+for row in rows do
+  if row.Survived = true && row.Sex = "Male" && row.Name.Length > 40 then
+    printfn "%s (%f)" row.Name row.Age
 
 // ------------------------------------------------------------------
 // TUTORIAL: Introdcing higher-order, first-class functions & collections 
@@ -77,6 +92,17 @@ rows
 
 // TASK #2: Find out whether the average age of those who survived
 // is greater/smaller than the average age of those who died
+let livedAverage = 
+    rows
+    |> Seq.filter (fun r -> System.Double.IsNaN(r.Age) = false && r.Survived = true)
+    |> Seq.averageBy (fun r -> float r.Age)
+
+let diedAverage = 
+    rows
+    |> Seq.filter (fun r -> System.Double.IsNaN(r.Age) = false && r.Survived = false)
+    |> Seq.averageBy (fun r -> float r.Age)
+
+livedAverage > diedAverage
 
 // ------------------------------------------------------------------
 // TUTORIAL: Creating an array of records from the CSV Provider
@@ -133,10 +159,26 @@ passengers
 // TASK: Let's replace any passengers that have a nan fare value 
 // with the mean fare value (Seq.averageBy)
 // Your Code Here
+let fareAverage = 
+    passengers
+    |> Seq.filter (fun p -> System.Double.IsNaN(p.fare) = false)
+    |> Seq.averageBy (fun p -> float p.fare)
+
+passengers
+|> Seq.iteri(fun idx p -> if System.Double.IsNaN(p.fare) then
+                            passengers.[idx] <- { p with fare = fareAverage })
 
 // TASK2: Let's replace any passengers that have a nan age value 
 // with the average avg value (Seq.averageBy)
 // Your Code Here
+let ageAverage = 
+    passengers
+    |> Seq.filter (fun p -> System.Double.IsNaN(p.age) = false)
+    |> Seq.averageBy (fun p -> float p.age)
+
+passengers
+|> Seq.iteri(fun idx p -> if System.Double.IsNaN(p.age) then
+                            passengers.[idx] <- { p with fare = ageAverage })
 
 // ------------------------------------------------------------------
 // TUTORIAL: Cleaning Of The Data: Part 2
@@ -195,6 +237,15 @@ passengers.[796] <- {passengers.[796] with title = Some "Mrs" }
 // To detemine their deck.  If they do not have a cabin, 
 // you can assume they were in steerage
 // You don't need a map, but a supporting function would be helpful
+
+let getDeck (cabin:string) =
+    if System.String.IsNullOrEmpty(cabin) then
+        "S"
+    else
+        cabin.Substring(0,1)
+
+passengers
+|> Seq.iteri(fun idx p -> passengers.[idx] <- { p with deck = getDeck p.cabin })
 
 // ------------------------------------------------------------------
 // TUTORIAL: Determining If Someone Lived Or Died
@@ -285,7 +336,17 @@ let writeResults =
 // Once you have a model, predict the test set
 // and submit it to Kaggle
 // Good luck!
+type NumlPassenger' = {[<Feature>] sex:string; [<Feature>] pClass:int; [<Label>] mutable survived: bool}
+let dataFrame' = 
+    passengers 
+    |> Seq.map(fun p -> {NumlPassenger'.sex = p.sex; pClass=p.pClass ; survived=p.survived})
+    |> Seq.map box
 
+let descriptor' = Descriptor.Create<NumlPassenger'>()
+let generator' = new DecisionTreeGenerator(descriptor')
+generator'.SetHint(false)
+let model' = Learner.Learn(dataFrame', 0.80, 25, generator')
+printfn "%A" model'.Model
 
 //If you still have some time
 //Go back to this:
@@ -294,10 +355,10 @@ let writeResults =
 //And replace the nan fare with a more precise value than the avg
 //Perhaps the median?
 
+
 //Go back to this:
 //  TASK2: Let's replace any passengers that have a nan age value 
 //  with the average avg value (Seq.averageBy)
 //And replace the nan age with a more precise value than the avg
 //Perhaps a logistic regression?
-
 

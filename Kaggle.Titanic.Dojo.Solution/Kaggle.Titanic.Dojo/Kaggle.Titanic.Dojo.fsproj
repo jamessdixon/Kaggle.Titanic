@@ -52,8 +52,9 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <None Include="Titanic.fsx" />
+    <None Include="Organizer.fsx" />
     <Content Include="packages.config" />
+    <None Include="Titanic.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord">
