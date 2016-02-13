@@ -52,10 +52,9 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <None Include="Iris.fsx" />
     <None Include="Titanic.fsx" />
+    <None Include="Iris.fsx" />
     <Content Include="packages.config" />
-    <None Include="Tennis.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord">
