@@ -1,20 +1,22 @@
 ﻿
-#r "../packages/FSharp.Data.2.2.5/lib/net40/FSharp.Data.dll"
-open FSharp.Data
-
 //Thanks to the following examples
 //http://fssnip.net/jb
 //http://numl.net/
 //https://www.kaggle.com/yildirimarda/titanic/titanic-test3/files
 
+// ------------------------------------------------------------------
+// TUTORIAL: Bring in data using type providers 
+// ------------------------------------------------------------------
 
 //Load Data from the local file system
+#r "../packages/FSharp.Data.2.2.5/lib/net40/FSharp.Data.dll"
+open FSharp.Data
 [<Literal>]
 let trainPath = "../data/train.csv"
 type Context = CsvProvider<trainPath>
 let rows = Context.GetSample().Rows
 
-//Explore Data
+//Explore The Data
 let first = rows |> Seq.head
 first.Name
 first.Age
@@ -133,7 +135,7 @@ passengers
 // Your Code Here
 
 // TASK2: Let's replace any passengers that have a nan age value 
-// with the average ave value (Seq.averageBy)
+// with the average avg value (Seq.averageBy)
 // Your Code Here
 
 // ------------------------------------------------------------------
@@ -271,7 +273,7 @@ let submission =
 //Write it to the file system
 //We add a header row of "PassengerId,Survived"
 //Because that is what Kaggle wants fot its submission
-//Go ahead and check th edata folder and see if there is the .csv
+//Go ahead and check the data folder and see if there is the .csv
 //in it.  When you open it, it should have
 //a single header row and 418 lines of predictions
 open System.IO
@@ -283,3 +285,11 @@ let writeResults =
 // Once you have a model, predict the test set
 // and submit it to Kaggle
 // Good luck!
+
+//If you still have some time
+//Go back to this:
+//  TASK2: Let's replace any passengers that have a nan age value 
+//  with the average avg value (Seq.averageBy)
+//And replace the nan age with a more precise value than the avg
+//Perhaps a logistic regression?
+
