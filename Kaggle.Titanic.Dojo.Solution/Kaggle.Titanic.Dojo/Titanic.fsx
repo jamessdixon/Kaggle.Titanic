@@ -207,17 +207,19 @@ open numl.Math.Probability
 open numl.Supervised.DecisionTree
 
 //Create a numl class
-type numlPassenger = {[<Feature>] sex:string; [<Feature>] enbarked:string; [<Label>] survived: bool}
+//Note that the survived is mutable
+//so that numl can alter its value when it gets to the training phase
+type NumlPassenger = {[<Feature>] sex:string; [<Feature>] enbarked:string; [<Label>] mutable survived: bool}
 
 //Create a dataframe populated with instances of the numl classes
 let dataFrame = 
     passengers 
-    |> Seq.map(fun p -> {numlPassenger.sex = p.sex; enbarked = p.embarked; survived=p.survived})
+    |> Seq.map(fun p -> {NumlPassenger.sex = p.sex; enbarked = p.embarked; survived=p.survived})
     |> Seq.map box
 
 //Create desscriptor so the output is readable
 //Set the seed to help when the samples are randomized
-let descriptor = Descriptor.Create<numlPassenger>()
+let descriptor = Descriptor.Create<NumlPassenger>()
 Sampling.SetSeedFromSystemTime() 
 //Create a Decision Tree Generator
 //If you want to try a different model, select a 
@@ -233,6 +235,51 @@ let model = Learner.Learn(dataFrame, 0.80, 25, generator)
 printfn "%A" model.Model
 
 //With the model trained
-//Use the test data set...
-//TODO start here
-//model.Model.Predict()
+//We can now see what scores we get with the test data
+//Load Data from the local file system
+[<Literal>]
+let testPath = "../data/test.csv"
+type testContext = CsvProvider<testPath>
+let testRows = testContext.GetSample().Rows
+
+//The test data is identitcal to the train data
+//with the exception that the survived is not included
+//numl wants the same data structured passed in for calculation
+//so we just default it to false
+//We then have the model predict survival 
+//And since numl retuns the result as an object
+//we have to cast it back into a NumlPassenger class
+let testFrame = 
+    testRows 
+    |> Seq.map(fun tr -> {NumlPassenger.sex = tr.Sex; enbarked = tr.Embarked; survived=false})
+    |> Seq.map(fun np -> model.Model.Predict(np))
+    |> Seq.map(fun o -> unbox o)
+   
+//With the test frame ready, we need to combine it
+//with the original testRows
+//As long as it was not run in parallel, order is preserved
+//Seq.zip "glues" the two sequences together
+//Next, in the map
+//we take the passengerId and the survival prediction
+//and turn it into a single comma-seperated string
+//Finally, we turn it into a list
+let submission =
+    Seq.zip testRows testFrame
+    |> Seq.map(fun (tr,np) -> sprintf "%i,%A" tr.PassengerId np.survived)
+    |> List.ofSeq
+
+//Write it to the file system
+//We add a header row of "PassengerId,Survived"
+//Because that is what Kaggle wants fot its submission
+//Go ahead and check th edata folder and see if there is the .csv
+//in it.  When you open it, it should have
+//a single header row and 418 lines of predictions
+open System.IO
+let writeResults =
+    let outputPath = __SOURCE_DIRECTORY__ + "../../data/submission.csv"
+    File.WriteAllLines(outputPath, "PassengerId,Survived" :: submission)
+
+// TASK: Create another tree with three varaibles: sex, age, and class
+// Once you have a model, predict the test set
+// and submit it to Kaggle
+// Good luck!
