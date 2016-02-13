@@ -198,68 +198,69 @@ passengers.[796] <- {passengers.[796] with title = Some "Mrs" }
 // TUTORIAL: Determining If Someone Lived Or Died
 // ------------------------------------------------------------------
 
+//Using numl
+#r "../packages/numl.0.8.26.0/lib/net40/numl.dll"
+open numl
 
-//#r "../packages/numl.0.8.26.0/lib/net40/numl.dll"
-//open numl
+open numl.Model
+open numl.Math.Probability
+open numl.Supervised.DecisionTree
+
+type numlPassenger = {[<Feature>] sex:string; [<Feature>] enbarked:string; [<Label>] survived: bool}
+
+let dataFrame = 
+    passengers 
+    |> Seq.map(fun p -> {numlPassenger.sex = p.sex; enbarked = p.embarked; survived=p.survived})
+    |> Seq.map box
+
+let descriptor = Descriptor.Create<numlPassenger>()
+Sampling.SetSeedFromSystemTime() 
+let generator = new DecisionTreeGenerator(descriptor)
+generator.SetHint(false)
+let model = Learner.Learn(dataFrame, 0.80, 25, generator)
+System.Console.WriteLine(model)
+model.Model
+
+
+//Using Accord
+//#r "../packages/Accord.3.0.2/lib/net40/Accord.dll"
+//#r "../packages/Accord.Math.3.0.2/lib/net40/Accord.Math.dll"
+//#r "../packages/Accord.MachineLearning.3.0.2/lib/net40/Accord.MachineLearning.dll"
+//#r "../packages/Accord.Statistics.3.0.2/lib/net40/Accord.Statistics.dll"
 //
-//open numl.Model
-//open numl.Math.Probability
-//open numl.Supervised.DecisionTree
+//open Accord
+//open Accord.MachineLearning
+//open Accord.MachineLearning.DecisionTrees
+//open Accord.MachineLearning.DecisionTrees.Learning
 //
-//type numlPassenger = {[<Feature>] sex:string; [<Label>] survived: bool}
+//let sex = new DecisionVariable("sex",1)
+//let embarked = new DecisionVariable("embarked",2)
+//let attributes =[|sex;embarked|]
+//let classCount = 2
 //
-//let dataFrame = 
+//let getInputs (passenger:Passenger) =
+//    let sex = if passenger.sex = "male" then 0.0 else 1.0
+//    let embarked = match passenger.embarked with
+//    | "C" -> 0.0
+//    | "Q" -> 1.0
+//    | _ -> 2.0
+//    [|sex;embarked|]
+//
+//let inputs = 
 //    passengers 
-//    |> Seq.map(fun p -> {numlPassenger.sex = p.sex; survived=p.survived})
-//    |> Seq.map box
+//    |> Array.map(fun p -> getInputs p)
 //
-//let descriptor = Descriptor.Create<numlPassenger>()
-//Sampling.SetSeedFromSystemTime() 
-//let generator = new DecisionTreeGenerator(descriptor)
-//generator.SetHint(false)
-//let model = Learner.Learn(dataFrame, 0.80, 25, generator)
-//System.Console.WriteLine(model)
-//model.Model
-
-
-#r "../packages/Accord.3.0.2/lib/net40/Accord.dll"
-#r "../packages/Accord.Math.3.0.2/lib/net40/Accord.Math.dll"
-#r "../packages/Accord.MachineLearning.3.0.2/lib/net40/Accord.MachineLearning.dll"
-#r "../packages/Accord.Statistics.3.0.2/lib/net40/Accord.Statistics.dll"
-
-open Accord
-open Accord.MachineLearning
-open Accord.MachineLearning.DecisionTrees
-open Accord.MachineLearning.DecisionTrees.Learning
-
-let sex = new DecisionVariable("sex",1)
-let embarked = new DecisionVariable("embarked",2)
-let attributes =[|sex;embarked|]
-let classCount = 2
-
-let getInputs (passenger:Passenger) =
-    let sex = if passenger.sex = "male" then 0.0 else 1.0
-    let embarked = match passenger.embarked with
-    | "C" -> 0.0
-    | "Q" -> 1.0
-    | _ -> 2.0
-    [|sex;embarked|]
-
-let inputs = 
-    passengers 
-    |> Array.map(fun p -> getInputs p)
-
-let outputs = 
-    passengers 
-    |> Array.map(fun p -> if p.survived = true then 1 else 0)
-
-let  tree = new DecisionTree(attributes, classCount)
-let c45  = new C45Learning(tree)
-let error = c45.Run(inputs,outputs)
-
-let rec printNode (node:DecisionNode) =
-    if node.Branches.Count > 0 then
-        node.Branches |> Seq.iter(fun b -> printNode b)
-    else printfn "%A,%A" (node.Output)(node.GetHeight()) 
-
-printNode tree.Root
+//let outputs = 
+//    passengers 
+//    |> Array.map(fun p -> if p.survived = true then 1 else 0)
+//
+//let  tree = new DecisionTree(attributes, classCount)
+//let c45  = new C45Learning(tree)
+//let error = c45.Run(inputs,outputs)
+//
+//let rec printNode (node:DecisionNode) =
+//    if node.Branches.Count > 0 then
+//        node.Branches |> Seq.iter(fun b -> printNode b)
+//    else printfn "%A,%A" (node.Output)(node.GetHeight()) 
+//
+//printNode tree.Root
