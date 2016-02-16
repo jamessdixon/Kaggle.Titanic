@@ -134,6 +134,13 @@ passengers
 // with the mean fare value (Seq.averageBy)
 // Your Code Here
 
+// QUESTION: why? there aren't any such passengers in the training set,
+// from the Kaggle R, index 1044 of the combined set is fare NaN
+let avgFare =
+  passengers
+  |> Seq.filter (fun p -> not <| System.Double.IsNaN p.fare)
+  |> Seq.averageBy (fun p -> p.fare)
+
 // TASK2: Let's replace any passengers that have a nan age value 
 // with the average avg value (Seq.averageBy)
 // Your Code Here
@@ -193,7 +200,7 @@ passengers.[796] <- {passengers.[796] with title = Some "Mrs" }
 // TASK: Let's assign a value to the deck
 // You can look at the first letter of a person's cabin ("C85";"C123";"E46")
 // To detemine their deck.  If they do not have a cabin, 
-// you can assume they were in steerage
+// you can assume they were in steerage, i.e. "S"
 // You don't need a map, but a supporting function would be helpful
 
 // ------------------------------------------------------------------
@@ -211,15 +218,16 @@ open numl.Supervised.DecisionTree
 //Create a numl class
 //Note that the survived is mutable
 //so that numl can alter its value when it gets to the training phase
-type NumlPassenger = {[<Feature>] sex:string; [<Feature>] enbarked:string; [<Label>] mutable survived: bool}
+type NumlPassenger = {[<Feature>] sex:string; [<Feature>] embarked:string; [<Label>] mutable survived: bool}
 
 //Create a dataframe populated with instances of the numl classes
 let dataFrame = 
     passengers 
-    |> Seq.map(fun p -> {NumlPassenger.sex = p.sex; enbarked = p.embarked; survived=p.survived})
+    |> Seq.map(fun p -> {NumlPassenger.sex = p.sex; embarked = p.embarked; survived=p.survived})
     |> Seq.map box
+ // QUESTION: would using a proper F# Class for NumlPassenger lead to fewer questions, e.g. what is `box`?
 
-//Create desscriptor so the output is readable
+//Create descriptor so the output is readable
 //Set the seed to help when the samples are randomized
 let descriptor = Descriptor.Create<NumlPassenger>()
 Sampling.SetSeedFromSystemTime() 
@@ -239,9 +247,7 @@ printfn "%A" model.Model
 //With the model trained
 //We can now see what scores we get with the test data
 //Load Data from the local file system
-[<Literal>]
-let testPath = "../data/test.csv"
-type testContext = CsvProvider<testPath>
+type testContext = CsvProvider<"../data/test.csv">
 let testRows = testContext.GetSample().Rows
 
 //The test data is identitcal to the train data
@@ -251,9 +257,9 @@ let testRows = testContext.GetSample().Rows
 //We then have the model predict survival 
 //And since numl retuns the result as an object
 //we have to cast it back into a NumlPassenger class
-let testFrame = 
+let testFrame : NumlPassenger seq =  // NOTE value restriction compiler error
     testRows 
-    |> Seq.map(fun tr -> {NumlPassenger.sex = tr.Sex; enbarked = tr.Embarked; survived=false})
+    |> Seq.map(fun tr -> {NumlPassenger.sex = tr.Sex; embarked = tr.Embarked; survived=false})
     |> Seq.map(fun np -> model.Model.Predict(np))
     |> Seq.map(fun o -> unbox o)
    
@@ -265,9 +271,13 @@ let testFrame =
 //we take the passengerId and the survival prediction
 //and turn it into a single comma-seperated string
 //Finally, we turn it into a list
+(*
+   From Kaggle:
+For each passenger in the test set, you must predict whether or not they survived the sinking ( 0 for deceased, 1 for survived ).  Your score is the percentage of passengers you correctly predict.
+ *)
 let submission =
     Seq.zip testRows testFrame
-    |> Seq.map(fun (tr,np) -> sprintf "%i,%A" tr.PassengerId np.survived)
+    |> Seq.map(fun (tr,np) -> sprintf "%i,%d" tr.PassengerId (if np.survived then 1 else 0))
     |> List.ofSeq
 
 //Write it to the file system
@@ -279,7 +289,8 @@ let submission =
 //You can then upload it to Kaggle and see your score
 open System.IO
 let writeResults =
-    let outputPath = __SOURCE_DIRECTORY__ + "../../data/submission.csv"
+    // NOTE: tested on OSX
+    let outputPath = Path.Combine(__SOURCE_DIRECTORY__, "../data/submission.csv")
     File.WriteAllLines(outputPath, "PassengerId,Survived" :: submission)
 
 // TASK: Create another tree with two varaibles: sex, and class
